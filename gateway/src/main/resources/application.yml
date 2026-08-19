@@ -1,0 +1,53 @@
+server:
+  port: 8091
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: servicioa
+              uri: lb://servicioa
+              predicates:
+                - Path=/api/a/**
+              filters:
+                - StripPrefix=2
+
+            - id: serviciob
+              uri: lb://serviciob
+              predicates:
+                - Path=/api/b/**
+              filters:
+                - StripPrefix=2
+
+            - id: medicos
+              uri: lb://medicos
+              predicates:
+                - Path=/api/medicos/**
+              filters:
+                - StripPrefix=2
+
+            - id: paciente
+              uri: lb://paciente
+              predicates:
+                - Path=/api/paciente/**
+              filters:
+                - StripPrefix=2
+
+            - id: citas
+              uri: lb://citas
+              predicates:
+                - Path=/api/citas/**
+              filters:
+                - StripPrefix=2
+    loadbalancer:
+      enabled: true
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+  instance:
+    prefer-ip-address: true
