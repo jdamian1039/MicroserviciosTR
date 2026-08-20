@@ -20,21 +20,21 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
 
     @Query(nativeQuery=true, value= """
         SELECT COUNT(ID_CITA) > 0 FROM CITAS WHERE ID_PACIENTE=:idPaciente AND 
-            (ESTADO_CITA='PENDIENTE' OR ESTADO_CITA='CONFIRMADA')
+            (ESTADO_CITA='EN_CURSO' OR ESTADO_CITA='CONFIRMADA')
     """ )
     Boolean consultarCitasConfirmadasPendientesPaciente(@Param("idPaciente") Long idPaciente);
 
     @Query(nativeQuery=true, value= """
         SELECT COUNT(ID_CITA) > 0 FROM CITAS WHERE ID_MEDICO=:idMedico AND 
-            (ESTADO_CITA='PENDIENTE' OR ESTADO_CITA='CONFIRMADA')
+            (ESTADO_CITA='EN_CURSO' OR ESTADO_CITA='CONFIRMADA')
     """ )
     Boolean consultarCitasConfirmadasPendientesMedico(@Param("idMedico") Long idMedico);
 
-    @Query(nativeQuery=true, value= """
-        SELECT COUNT(ID_CITA) FROM CITAS WHERE ID_CITA=:idCita AND 
-            ESTADO_CITA NOT IN ('PENDIENTE', 'CONFIRMADA', 'CANCELADA')
-    """ )
-    Integer consultarCitasParaEliminar(@Param("idCita") Long idCita);
+    //@Query(nativeQuery=true, value= """
+    //    SELECT COUNT(ID_CITA) FROM CITAS WHERE ID_CITA=:idCita AND
+    //        ESTADO_CITA NOT IN ('PENDIENTE', 'CONFIRMADA', 'CANCELADA')
+    //""" )
+    //Integer consultarCitasParaEliminar(@Param("idCita") Long idCita);
 
     //boolean existsByIdPacienteAndEstadoCitaIn(Long idPaciente, Collection<EstadoCita> estadoCitas);
     //boolean existsByIdPacienteAndEstadoCita(Long idPaciente, EstadoCita estadoCita);

@@ -18,10 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -86,18 +83,24 @@ public class CitaServiceImp implements CitaService{
     @Override
     public CitaResponse actualizar(CitaRequest request, Long id) {
         Cita cita = obtenerCitaOrException(id);
-        validarCitaActual(cita.getEstadoCita().getCodigo());
+        Long anteriorIdMedico = cita.getIdMedico();
+        Set<EstadoCita> estadosValidos = Set.of(EstadoCita.PENDIENTE, EstadoCita.CONFIRMADA);
+        if (!estadosValidos.contains(cita.getEstadoCita()))
+            throw new IllegalArgumentException("Solo pueden actualizarse citas si estan " +
+                    "PENDIENTES o CONFIRMADAS");
+
         MedicoResponse medico = obtenerMedicoActivo(request.idMedico());
-        if (!Objects.equals(medico.id(), cita.getIdMedico()))
-            validarEstatusMedico(request.idMedico());
+        if (!Objects.equals(medico.id(), anteriorIdMedico))
+            validarEstatusMedico(medico.id());
 
         PacienteResponse paciente = obtenerPacienteActivo(request.idPaciente());
-        validarCitasPaciente(request.idPaciente());
+        if (!Objects.equals(paciente.id(), cita.getIdPaciente()))
+            validarCitasPaciente(paciente.id());
 
         log.info("Actualizando cita con id {}", id);
         cita.actualizar(request.idPaciente(), request.idMedico(), request.fechaCita(), request.sintomas());
-        if (Objects.equals(medico.id(), cita.getIdMedico()))
-            medicoClient.actualizarDisponibilidadMedico(request.idMedico(),
+        if (!Objects.equals(medico.id(), anteriorIdMedico))
+            medicoClient.actualizarDisponibilidadMedico(anteriorIdMedico,
                     DisponibilidadMedico.DISPONIBLE.getCodigo());
 
         return citaMapper.entidadResponse(cita, paciente, medico);
@@ -106,7 +109,8 @@ public class CitaServiceImp implements CitaService{
     @Override
     public void eliminar(Long id) {
         Cita cita = obtenerCitaOrException(id);
-        if (citaRepository.consultarCitasParaEliminar(id) > 0)
+        Set<EstadoCita> estadosValidos = Set.of(EstadoCita.PENDIENTE, EstadoCita.CONFIRMADA, EstadoCita.CANCELADA);
+        if (!estadosValidos.contains(cita.getEstadoCita()))
             throw new IllegalArgumentException("La cita solo puede estar PENDIENTE, " +
                     "CANCELADA o FINALIZADA para ser eliminada");
         log.info(cita.getEstadoCita().getDescripcion());
@@ -155,14 +159,6 @@ public class CitaServiceImp implements CitaService{
     private void validarCitasMedico(Long id){
         if (citaRepository.consultarCitasConfirmadasPendientesMedico(id))
             throw new IllegalStateException("Paciente ya cuenta con citas agendadas");
-    }
-
-    private void validarCitaActual(Long id){
-        EstadoCita estado = EstadoCita.obtenerEstadoCitaPorCodigo(id);
-
-        if (estado != EstadoCita.CONFIRMADA || estado != EstadoCita.PENDIENTE)
-            throw new IllegalArgumentException("Solo se pueden reasignar medico o " +
-                    "pacientes a citas CONFIRMADAS o PENDIENTES");
     }
 
 }
