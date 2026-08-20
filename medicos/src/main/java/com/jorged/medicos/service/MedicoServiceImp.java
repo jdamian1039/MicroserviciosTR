@@ -1,5 +1,7 @@
 package com.jorged.medicos.service;
 
+import com.jorged.commons.client.CitaClient;
+import com.jorged.commons.client.MedicoClient;
 import com.jorged.commons.dto.medicos.MedicoRequest;
 import com.jorged.commons.dto.medicos.MedicoResponse;
 import com.jorged.commons.enums.DisponibilidadMedico;
@@ -24,6 +26,8 @@ public class MedicoServiceImp implements MedicoService{
 
     private final MedicoRepository medicoRepository;
     private final MedicoMapper medicoMapper;
+    private final MedicoClient medicoClient;
+    private final CitaClient citaClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -67,7 +71,7 @@ public class MedicoServiceImp implements MedicoService{
     @Override
     public MedicoResponse actualizar(MedicoRequest request, Long id) {
         Medico medico = obtenerMedicoActivoOrExcep(id);
-
+        citaClient.validarAgendaMedico(id);
         validarCambiosUnicos(request, id);
 
         medico.actualizarMedico(request.nombre(), request.apellidoPaterno(), request.apellidoMaterno(), request.edad(),
@@ -82,6 +86,7 @@ public class MedicoServiceImp implements MedicoService{
     @Override
     public void actualizarDisponibilidadMedico(Long idMedico, Long idDisponibilidad) {
         Medico medico = obtenerMedicoActivoOrExcep(idMedico);
+
         log.info("Cambiando disponibilidad de Medico {} a {}...", idMedico, idDisponibilidad);
         DisponibilidadMedico nuevaDisponibilidad = DisponibilidadMedico
                 .obtenerDisponibilidadPorCodigo(idDisponibilidad);
@@ -94,6 +99,7 @@ public class MedicoServiceImp implements MedicoService{
     @Override
     public void eliminar(Long id) {
         Medico medico = obtenerMedicoActivoOrExcep(id);
+        citaClient.validarAgendaMedico(id);
 
         log.info("Eliminar medico {}", id);
 

@@ -1,5 +1,6 @@
 package com.jorged.paciente.service;
 
+import com.jorged.commons.client.CitaClient;
 import com.jorged.commons.dto.pacientes.PacienteRequest;
 import com.jorged.commons.dto.pacientes.PacienteResponse;
 import com.jorged.paciente.entity.Paciente;
@@ -22,6 +23,7 @@ public class PacienteServiceImp implements PacienteService {
 
     private final PacienteRepository pacienteRepository;
     private final PacienteMapper pacienteMapper;
+    private final CitaClient citaClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -63,7 +65,7 @@ public class PacienteServiceImp implements PacienteService {
     public PacienteResponse actualizar(PacienteRequest request, Long id) {
         log.info("Buscando paciente con id {}", id);
         Paciente paciente = obtenerPacienteOException(id);
-
+        citaClient.validarAgendaPaciente(id);
         validarCambiosUnicos(request.telefono(), request.email(), id);
 
         log.info("Actualizando informacion...");
@@ -77,6 +79,7 @@ public class PacienteServiceImp implements PacienteService {
     @Override
     public void eliminar(Long id) {
         Paciente paciente = obtenerPacienteOException(id);
+        citaClient.validarAgendaPaciente(id);
         //TODO: Validar citas asociadas
         paciente.borradoLogico();
     }

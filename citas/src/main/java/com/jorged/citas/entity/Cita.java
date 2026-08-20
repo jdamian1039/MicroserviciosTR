@@ -6,6 +6,7 @@ import com.jorged.commons.utils.StringCustomUtils;
 import com.jorged.commons.utils.ValoresNumericosUtils;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Builder @Getter
+@Slf4j
 public class Cita {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,6 +57,7 @@ public class Cita {
     }
 
     private void validarNoEliminado(){
+        log.info("este: --> {}", this.estadoRegistro.toString());
         if (this.estadoRegistro == EstadoRegistro.ELIMINADO)
             throw new IllegalStateException("La cita ya fue eliminada");
     }
@@ -73,6 +76,8 @@ public class Cita {
     public void eliminar(){
         validarEliminacionPermitida();
         this.estadoRegistro = EstadoRegistro.ELIMINADO;
+        if (this.estadoCita != EstadoCita.FINALIZADA)
+            this.estadoCita = EstadoCita.CANCELADA;
     }
 
     public void actualizar(Long idPaciente, Long idMedico, LocalDateTime fechaCita, String sintomas) {
