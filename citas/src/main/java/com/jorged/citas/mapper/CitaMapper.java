@@ -40,8 +40,8 @@ public class CitaMapper implements CommonMapper<CitaRequest, CitaResponse, Cita>
         if (entidad == null) return null;
         return new CitaResponse(
                 entidad.getId(),
-                null,
-                null,
+                pacienteResponseADatosPaciente(paciente),
+                medicoResponseADatosMedico(medico),
                 entidad.getFechaCita(),
                 entidad.getSintomas(),
                 entidad.getEstadoCita().getDescripcion()

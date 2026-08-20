@@ -1,6 +1,8 @@
 package com.jorged.paciente.entity;
 
 import com.jorged.commons.enums.EstadoRegistro;
+import com.jorged.commons.utils.StringCustomUtils;
+import com.jorged.commons.utils.ValoresNumericosUtils;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -48,6 +50,32 @@ public class Paciente {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private EstadoRegistro estadoRegistro;
 
+    public void validarDatos(String nombre, String apellidoPaterno, String apellidoMaterno, Short edad, Double peso,
+                    Double estatura, String email, String telefono, String direccion) {
+        StringCustomUtils.validarTamanio(nombre, 1, 50,
+                "El nombre es requerido. Debe contener 1-50 caracteres");
+        StringCustomUtils.validarTamanio(apellidoPaterno, 1, 50,
+                "El nombre es requerido. Debe contener 1-50 caracteres");
+        StringCustomUtils.validarTamanio(apellidoMaterno, 1, 50,
+                "El nombre es requerido. Debe contener 1-50 caracteres");
+        StringCustomUtils.validarTamanio(email, 1, 100,
+                "El nombre es requerido. Debe contener 1-100 caracteres");
+        StringCustomUtils.validarTamanio(telefono, 10, 10,
+                "El telefono es requerido. Debe contener 10 digitos");
+        StringCustomUtils.validarTamanio(direccion, 1, 150,
+                "La cedula es requerido. Debe contener 12 caracteres");
+        ValoresNumericosUtils.validarRangoShort(edad, (short)1, (short)100,
+                "La edad es requerida y debe ser de 1-100 años");
+        ValoresNumericosUtils.validarRangoDouble(estatura, 1.0, 2.0,
+                "Estatura requerida y en el rango de 1.0 m a 2.0 m");
+        ValoresNumericosUtils.validarRangoDouble(peso, 0.1, 200.0,
+                "Peso requerido y en el rango de 0.1 kg a 200.0 kg");
+    }
+
+    private void validarNoEliminado(){
+        if (this.estadoRegistro==EstadoRegistro.ELIMINADO)
+            throw new IllegalArgumentException("El paciente ya esta eliminado");
+    }
     public void generarIMC(Double estatura, Double peso){
         this.indiceMasaCorp = peso/(estatura * estatura);
     }
@@ -59,21 +87,26 @@ public class Paciente {
     }
 
     public void borradoLogico(){
+        validarNoEliminado();
         this.estadoRegistro = EstadoRegistro.ELIMINADO;
     }
 
     public void actualizarPaciente(String nombre, String apellidoPaterno, String apellidoMaterno,
                     Short edad, Double peso, Double estatura, String email, String telefono,
                                    String direccion) {
-        this.nombre = nombre;
-        this.apellidoPaterno = apellidoPaterno;
-        this.apellidoMaterno = apellidoMaterno;
+        validarNoEliminado();
+        validarDatos(nombre, apellidoPaterno, apellidoMaterno, edad, peso, estatura,
+                email, telefono, direccion);
+
+        this.nombre = nombre.trim();
+        this.apellidoPaterno = apellidoPaterno.trim();
+        this.apellidoMaterno = apellidoMaterno.trim();
         this.edad = edad;
         this.peso = peso;
         this.estatura = estatura;
-        this.email = email;
-        this.telefono = telefono;
-        this.direccion = direccion;
+        this.email = email.trim().toLowerCase();
+        this.telefono = telefono.trim();
+        this.direccion = direccion.trim();
 
         generarExpediente(telefono);
         generarIMC(estatura, peso);

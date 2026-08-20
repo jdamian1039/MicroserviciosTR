@@ -26,7 +26,7 @@ public class MedicoController extends CommonController<MedicoRequest, MedicoResp
         return  ResponseEntity.ok(service.obtenerMedicoPorIdSinEstado(id));
     }
     @PutMapping("/{idMedico}/disponibilidad/{idDisponibilidad}")
-    public ResponseEntity<MedicoResponse> obtenerMedicoPorIdSinEstado(
+    public ResponseEntity<MedicoResponse> actualizarDisponibilidadMedico(
             @PathVariable @Positive(message = "Id medico debe ser valor positivo") Long idMedico,
             @PathVariable @Positive(message = "Id disp. debe ser valor positivo") Long idDisponibilidad
     ){
