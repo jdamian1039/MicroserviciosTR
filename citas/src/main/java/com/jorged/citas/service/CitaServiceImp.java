@@ -68,7 +68,7 @@ public class CitaServiceImp implements CitaService{
     @Override
     public CitaResponse registrar(CitaRequest request) {
         MedicoResponse medico = obtenerMedicoActivo(request.idMedico());
-        validarEstatusMedico(request.idMedico());
+        validarEstatusMedico(medico.idDisponibilidad());
         PacienteResponse paciente = obtenerPacienteActivo(request.idPaciente());
         validarCitasPaciente(request.idPaciente());
         Cita cita = citaMapper.requestAEntidad(request);
@@ -91,7 +91,7 @@ public class CitaServiceImp implements CitaService{
 
         MedicoResponse medico = obtenerMedicoActivo(request.idMedico());
         if (!Objects.equals(medico.id(), anteriorIdMedico))
-            validarEstatusMedico(medico.id());
+            validarEstatusMedico(medico.idDisponibilidad());
 
         PacienteResponse paciente = obtenerPacienteActivo(request.idPaciente());
         if (!Objects.equals(paciente.id(), cita.getIdPaciente()))
